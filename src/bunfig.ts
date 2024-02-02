@@ -7,38 +7,47 @@ type BunfigOptions = {
   scopes?: string;
 };
 
-
 const parseRegistryScopePairs = (registryUrl: string, scope: string) => {
   const registries: string[] = [];
-  for (const line of registryUrl.split(/\r|\n/)) {
-    registries.push(line);
+  if (registryUrl) {
+    for (const line of registryUrl.split(/\r|\n/)) {
+      registries.push(line);
+    }
   }
+
   const scopes = [];
-  for (const line of scope.split(/\r|\n/)) {
-    scopes.push(line)
+  if (scope) {
+    for (const line of scope.split(/\r|\n/)) {
+      scopes.push(line);
+    }
   }
 
   if (registries.length !== scopes.length) {
-    throw new Error(`Registires and Scopes must match length`)
+    throw new Error(`Registires and Scopes must match length`);
   }
 
   return registries.map((registry, index) => [registry, scopes[index]]);
-}
+};
 
 export function createBunfig(options: BunfigOptions): string | null {
   const { registryUrls, scopes } = options;
 
-  const registryScopePairs = parseRegistryScopePairs(registryUrls, scopes)
+  const registryScopePairs = parseRegistryScopePairs(registryUrls, scopes);
 
-  let bunfigString: string = registryScopePairs.length === 0 ? null : `
-  ${registryScopePairs.some(pair => pair[0]) && '[install]'}${EOL}
-  ${registryScopePairs.map((pair, index) => pair[0] && !pair[1] ? `unscoped_${index}${EOL}` : '').join('${EOL}')}
-  ${registryScopePairs.some(pair => pair[1] && '[install.scopes]')}${EOL}
-  ${registryScopePairs.map((pair, index) => pair[0] && pair[1] ? `scoped_${index}${EOL}` : '').join('${EOL}')}
-  `;
+  let bunfigString: string =
+    registryScopePairs.length === 0
+      ? null
+      : `${registryScopePairs.some((pair) => pair[0] && !pair[0]) ? `[install]${EOL}` : ''}${registryScopePairs
+        .map((pair, index) =>
+          pair[0] && !pair[1] ? `unscoped_${index}` : ""
+        )
+        .join(`${EOL}`)}
+${registryScopePairs.some((pair) => pair[0] && pair[1]) ? `[install.scopes]${EOL}`: ''}${registryScopePairs
+        .map((pair, index) => (pair[0] && pair[1] ? `scoped_${index}` : ""))
+        .join(`${EOL}`)}
+`;
 
   for (const [index, [registryUrl, scope]] of registryScopePairs.entries()) {
-
     let url: URL | undefined;
     if (registryUrl) {
       try {
@@ -56,11 +65,14 @@ export function createBunfig(options: BunfigOptions): string | null {
     }
 
     if (url && owner) {
-      bunfigString.replace(`scoped_${index}`, `'${owner}' = { token = "$BUN_AUTH_TOKEN", url = "${url}"}`);
+      bunfigString = bunfigString.replace(
+        `scoped_${index}`,
+        `'${owner}' = { token = "$BUN_AUTH_TOKEN${index >  0 ? `_${index}` : ''}", url = "${url.href}" }`
+      );
     }
 
     if (url && !owner) {
-      bunfigString.replace(`unscoped_${index}`, `registry = "${url}"`);
+      bunfigString = bunfigString.replace(`unscoped_${index}`, `registry = "${url.href}"`);
     }
   }
 

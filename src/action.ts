@@ -32,7 +32,10 @@ export type Output = {
 
 export default async (options: Input): Promise<Output> => {
   const bunfigPath = join(process.cwd(), "bunfig.toml");
-  writeBunfig(bunfigPath, { scopes: options.scope, registryUrls: options.registryUrl });
+  writeBunfig(bunfigPath, {
+    scopes: options.scope,
+    registryUrls: options.registryUrl,
+  });
 
   const url = getDownloadUrl(options);
   const cacheEnabled = isCacheEnabled(options);

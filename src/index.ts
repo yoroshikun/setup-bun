@@ -34,7 +34,7 @@ runAction({
   version: getInput("bun-version") || readVersionFromPackageJson() || undefined,
   customUrl: getInput("bun-download-url") || undefined,
   registryUrl: getInput("registry-url") || undefined,
-  scope: getInput("scope") || undefined,
+  scope: getInput("scope") ||  undefined,
 })
   .then(({ version, revision, cacheHit }) => {
     setOutput("bun-version", version);
