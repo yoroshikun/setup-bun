@@ -67,7 +67,7 @@ ${registryScopePairs.some((pair) => pair[0] && pair[1]) ? `[install.scopes]${EOL
     if (url && owner) {
       bunfigString = bunfigString.replace(
         `scoped_${index}`,
-        `'${owner}' = { token = "$BUN_AUTH_TOKEN${index >  0 ? `_${index}` : ''}", url = "${url.href}" }`
+        `"${owner}" = { token = "$BUN_AUTH_TOKEN${index >  0 ? `_${index}` : ''}", url = "${url.href}" }`
       );
     }
 

@@ -33,10 +33,10 @@ Multiple registry urls and scopes
 ```yaml
 - uses: oven-sh/setup-bun@v1
   with:
-    registry-url: |-
+    registry-url: >-
       https://npm.pkg.github.com/
       https://npm.pkg.github.com/other/
-    scope: |-
+    scope: >-
       @foo
       @bar
 ```
