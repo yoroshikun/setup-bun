@@ -28,6 +28,20 @@ If you need to authenticate with a private registry, you can set the `BUN_AUTH_T
   run: bun install --frozen-lockfile
 ```
 
+Multiple registry urls and scopes
+
+```yaml
+- uses: oven-sh/setup-bun@v1
+  with:
+    registry-url: |-
+      https://npm.pkg.github.com/
+      https://npm.pkg.github.com/other/
+    scope: |-
+      @foo
+      @bar
+```
+
+
 ### Node.js not needed
 
 In most cases, you shouldn't need to use the [setup-node](https://github.com/actions/setup-node) GitHub Action.
