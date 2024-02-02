@@ -47,7 +47,7 @@ Note: when using multiple registry urls and scopes you need to post fix your env
 - name: Install Dependencies
   env:
     BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-    BUN_AUTH_TOKEN_2: 'something else'
+    BUN_AUTH_TOKEN_2: "something else"
   run: bun install --frozen-lockfile
 ```
 

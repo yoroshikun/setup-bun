@@ -5,9 +5,14 @@ import { info } from "@actions/core";
 type BunfigOptions = {
   registryUrls?: string;
   scopes?: string;
+  token?: string;
 };
 
-const parseRegistryScopePairs = (registryUrl: string, scope: string) => {
+const parseRegistryScopeTuple = (
+  registryUrl: string,
+  scope: string,
+  token: string
+) => {
   const registries: string[] = [];
   if (registryUrl) {
     for (const line of registryUrl.split(/\r|\n/)) {
@@ -22,32 +27,58 @@ const parseRegistryScopePairs = (registryUrl: string, scope: string) => {
     }
   }
 
+  const tokenEnabled = [];
+  if (token) {
+    for (const line of token.split(/\r|\n/)) {
+      tokenEnabled.push(line === "true");
+    }
+  }
+
   if (registries.length !== scopes.length) {
     throw new Error(`Registires and Scopes must match length`);
   }
 
-  return registries.map((registry, index) => [registry, scopes[index]]);
+  return registries.map((registry, index) => [
+    registry,
+    scopes[index],
+    tokenEnabled[index],
+  ]);
 };
 
 export function createBunfig(options: BunfigOptions): string | null {
-  const { registryUrls, scopes } = options;
+  const { registryUrls, scopes, token } = options;
 
-  const registryScopePairs = parseRegistryScopePairs(registryUrls, scopes);
+  const registryScopeTuple = parseRegistryScopeTuple(
+    registryUrls,
+    scopes,
+    token
+  );
 
   let bunfigString: string =
-    registryScopePairs.length === 0
+    registryScopeTuple.length === 0
       ? null
-      : `${registryScopePairs.some((pair) => pair[0] && !pair[0]) ? `[install]${EOL}` : ''}${registryScopePairs
-        .map((pair, index) =>
-          pair[0] && !pair[1] ? `unscoped_${index}` : ""
-        )
-        .join(`${EOL}`)}
-${registryScopePairs.some((pair) => pair[0] && pair[1]) ? `[install.scopes]${EOL}`: ''}${registryScopePairs
-        .map((pair, index) => (pair[0] && pair[1] ? `scoped_${index}` : ""))
-        .join(`${EOL}`)}
+      : `${
+          registryScopeTuple.some((pair) => pair[0] && !pair[0])
+            ? `[install]${EOL}`
+            : ""
+        }${registryScopeTuple
+          .map((pair, index) =>
+            pair[0] && !pair[1] ? `unscoped_${index}` : ""
+          )
+          .join(`${EOL}`)}
+${
+  registryScopeTuple.some((pair) => pair[0] && pair[1])
+    ? `[install.scopes]${EOL}`
+    : ""
+}${registryScopeTuple
+          .map((pair, index) => (pair[0] && pair[1] ? `scoped_${index}` : ""))
+          .join(`${EOL}`)}
 `;
 
-  for (const [index, [registryUrl, scope]] of registryScopePairs.entries()) {
+  for (const [
+    index,
+    [registryUrl, scope, token],
+  ] of registryScopeTuple.entries()) {
     let url: URL | undefined;
     if (registryUrl) {
       try {
@@ -67,12 +98,19 @@ ${registryScopePairs.some((pair) => pair[0] && pair[1]) ? `[install.scopes]${EOL
     if (url && owner) {
       bunfigString = bunfigString.replace(
         `scoped_${index}`,
-        `"${owner}" = { token = "$BUN_AUTH_TOKEN${index >  0 ? `_${index}` : ''}", url = "${url.href}" }`
+        `"${owner}" = { ${
+          token
+            ? `token = "$BUN_AUTH_TOKEN${index > 0 ? `_${index}` : ""}", `
+            : ""
+        }url = "${url.href}" }`
       );
     }
 
     if (url && !owner) {
-      bunfigString = bunfigString.replace(`unscoped_${index}`, `registry = "${url.href}"`);
+      bunfigString = bunfigString.replace(
+        `unscoped_${index}`,
+        `registry = "${url.href}"`
+      );
     }
   }
 

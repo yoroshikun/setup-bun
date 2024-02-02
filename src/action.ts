@@ -22,6 +22,7 @@ export type Input = {
   profile?: boolean;
   scope?: string;
   registryUrl?: string;
+  token?: string;
 };
 
 export type Output = {
@@ -35,6 +36,7 @@ export default async (options: Input): Promise<Output> => {
   writeBunfig(bunfigPath, {
     scopes: options.scope,
     registryUrls: options.registryUrl,
+    token: options.token,
   });
 
   const url = getDownloadUrl(options);

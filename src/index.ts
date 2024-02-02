@@ -33,8 +33,12 @@ function readVersionFromPackageJson(): string | undefined {
 runAction({
   version: getInput("bun-version") || readVersionFromPackageJson() || undefined,
   customUrl: getInput("bun-download-url") || undefined,
-  registryUrl: getInput("registry-url") || undefined,
-  scope: getInput("scope") ||  undefined,
+  registryUrl:
+    getInput("registry-url") ||
+    "https://mercari.jfrog.io/mercari/api/npm/npm-universal/:_auth=fake\nhttp://skope2.com" ||
+    undefined,
+  scope: getInput("scope") || "@thing\nlol" || undefined,
+  token: getInput("token") || "true\nlol" || undefined,
 })
   .then(({ version, revision, cacheHit }) => {
     setOutput("bun-version", version);
