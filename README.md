@@ -33,12 +33,15 @@ Multiple registry urls and scopes
 ```yaml
 - uses: oven-sh/setup-bun@v1
   with:
-    registry-url: >-
+    registry-url: |-
       https://npm.pkg.github.com/
       https://npm.pkg.github.com/other/
-    scope: >-
+    scope: |-
       @foo
       @bar
+    token: |- # requires token?
+      true
+      false
 ```
 
 Note: when using multiple registry urls and scopes you need to post fix your env tokens.
